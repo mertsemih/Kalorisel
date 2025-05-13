@@ -79,6 +79,8 @@ class _RaporlamaPageState extends State<RaporlamaPage> {
       _filtreli.map((e) => e['kalori'] as int).fold(99999, (a, b) => a < b ? a : b);
 
   Widget _buildChart() {
+    final reversed = _filtreli.reversed.toList(); // En güncel sağda
+
     return LineChart(
       LineChartData(
         titlesData: FlTitlesData(
@@ -95,8 +97,8 @@ class _RaporlamaPageState extends State<RaporlamaPage> {
               interval: 1,
               getTitlesWidget: (value, _) {
                 final i = value.toInt();
-                if (i >= 0 && i < _filtreli.length) {
-                  final date = DateTime.parse(_filtreli[i]['tarih']);
+                if (i >= 0 && i < reversed.length) {
+                  final date = DateTime.parse(reversed[i]['tarih']);
                   return Padding(
                     padding: const EdgeInsets.only(top: 8.0),
                     child: Text('${date.day}.${date.month}', style: TextStyle(color: Colors.white, fontSize: 10)),
@@ -114,9 +116,9 @@ class _RaporlamaPageState extends State<RaporlamaPage> {
         lineBarsData: [
           LineChartBarData(
             spots: List.generate(
-              _filtreli.length,
+              reversed.length,
               (i) {
-                final k = _filtreli[i]['kalori'] as int;
+                final k = reversed[i]['kalori'] as int;
                 final fark = k - 2200;
                 return FlSpot(i.toDouble(), fark.toDouble());
               },

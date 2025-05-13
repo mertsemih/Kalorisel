@@ -12,8 +12,8 @@ class _KaloriHesaplaSayfasiState extends State<KaloriHesaplaSayfasi> {
   final _boyController = TextEditingController();
   final _yasController = TextEditingController();
 
-  String _cinsiyet = 'Seçiniz';
-  String _hedef = 'Seçiniz';
+  String? _cinsiyet;
+  String? _hedef;
 
   double? _bmr;
   double? _kaloriKorumak;
@@ -24,125 +24,61 @@ class _KaloriHesaplaSayfasiState extends State<KaloriHesaplaSayfasi> {
   String? _bmiDurumu;
 
   void _hesapla() async {
-  if (_formKey.currentState!.validate()) {
-    final kilo = double.parse(_kiloController.text);
-    final boy = double.parse(_boyController.text);
-    final yas = double.parse(_yasController.text);
+    if (_formKey.currentState!.validate()) {
+      final kilo = double.parse(_kiloController.text);
+      final boy = double.parse(_boyController.text);
+      final yas = double.parse(_yasController.text);
 
-    double bmr = (_cinsiyet == 'Erkek')
-        ? 10 * kilo + 6.25 * boy - 5 * yas + 5
-        : 10 * kilo + 6.25 * boy - 5 * yas - 161;
-    double korumak = bmr * 1.2;
-    double vermek = korumak - 500;
-    double almak = korumak + 500;
+      double bmr = (_cinsiyet == 'Erkek')
+          ? 10 * kilo + 6.25 * boy - 5 * yas + 5
+          : 10 * kilo + 6.25 * boy - 5 * yas - 161;
+      double korumak = bmr * 1.2;
+      double vermek = korumak - 500;
+      double almak = korumak + 500;
 
-    double boyMetre = boy / 100;
-    double bmi = kilo / (boyMetre * boyMetre);
-    String durum;
+      double boyMetre = boy / 100;
+      double bmi = kilo / (boyMetre * boyMetre);
+      String durum;
 
-    if (bmi < 18.5) {
-      durum = 'Zayıf';
-    } else if (bmi < 25) {
-      durum = 'Normal';
-    } else if (bmi < 30) {
-      durum = 'Fazla kilolu';
-    } else {
-      durum = 'Obez';
+      if (bmi < 18.5) {
+        durum = 'Zayıf';
+      } else if (bmi < 25) {
+        durum = 'Normal';
+      } else if (bmi < 30) {
+        durum = 'Fazla kilolu';
+      } else {
+        durum = 'Obez';
+      }
+
+      double hedefKalori = _hedef == 'Kilo Vermek'
+          ? vermek
+          : _hedef == 'Kilo Almak'
+              ? almak
+              : korumak;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setDouble('hedefKalori', hedefKalori);
+
+      setState(() {
+        _bmr = bmr;
+        _kaloriKorumak = korumak;
+        _kaloriVermek = vermek;
+        _kaloriAlmak = almak;
+        _bmi = bmi;
+        _bmiDurumu = durum;
+      });
     }
-
-    double hedefKalori = 0;
-    if (_hedef == 'Kilo Vermek') {
-     hedefKalori = vermek;
-    } else if (_hedef == 'Kilo Almak') {
-     hedefKalori = almak;
-    } else if (_hedef == 'Korumak') {
-     hedefKalori = korumak;
-    } else {
-     return; 
   }
 
-    
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble('hedefKalori', hedefKalori);
-
-    setState(() {
-      _bmr = bmr;
-      _kaloriKorumak = korumak;
-      _kaloriVermek = vermek;
-      _kaloriAlmak = almak;
-      _bmi = bmi;
-      _bmiDurumu = durum;
-    });
-  }
-}
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Kalori Hesaplayıcı', style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: IconThemeData(color: Colors.white),
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: Colors.white),
+      enabledBorder: UnderlineInputBorder(
+        borderSide: BorderSide(color: Colors.white),
       ),
-      extendBodyBehindAppBar: true,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFB06AB3), Color(0xFF4568DC)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.only(top: kToolbarHeight + 20, left: 16, right: 16),
-          child: Form(
-            key: _formKey,
-            child: ListView(
-              children: [
-                DropdownButtonFormField<String>(
-                value: _cinsiyet,
-                dropdownColor: Colors.deepPurple[400],
-                style: TextStyle(color: Colors.white),
-                items: ['Seçiniz', 'Erkek', 'Kadın']
-                 .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                 .toList(),
-                onChanged: (v) => setState(() => _cinsiyet = v!),
-                 decoration: _inputDecoration('Cinsiyet'),
-               validator: (v) => (v == null || v == 'Seçiniz') ? 'Lütfen cinsiyet seçin' : null,
-               ),
-                SizedBox(height: 12),
-                _buildTextField('Kilo (kg)', _kiloController),
-                _buildTextField('Boy (cm)', _boyController),
-                _buildTextField('Yaş', _yasController),
-                SizedBox(height: 12),
-               DropdownButtonFormField<String>(
-               value: _hedef,
-               dropdownColor: Colors.deepPurple[400],
-               style: TextStyle(color: Colors.white),
-               items: ['Seçiniz', 'Korumak', 'Kilo Vermek', 'Kilo Almak']
-              .map((h) => DropdownMenuItem(value: h, child: Text(h)))
-              .toList(),
-               onChanged: (v) => setState(() => _hedef = v!),
-              decoration: _inputDecoration('Hedef'),
-              validator: (v) => (v == null || v == 'Seçiniz') ? 'Lütfen bir hedef seçin' : null,
-              ),
-                SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _hesapla,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.9),
-                    foregroundColor: Colors.deepPurple,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                  ),
-                  child: Text('Hesapla'),
-                ),
-                SizedBox(height: 24),
-                if (_kaloriKorumak != null) _buildSonuc(),
-              ],
-            ),
-          ),
-        ),
+      focusedBorder: UnderlineInputBorder(
+        borderSide: BorderSide(color: Colors.white),
       ),
     );
   }
@@ -157,15 +93,6 @@ class _KaloriHesaplaSayfasiState extends State<KaloriHesaplaSayfasi> {
         decoration: _inputDecoration(label),
         validator: (v) => v!.isEmpty ? '$label giriniz' : null,
       ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: TextStyle(color: Colors.white),
-      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
     );
   }
 
@@ -196,21 +123,98 @@ class _KaloriHesaplaSayfasiState extends State<KaloriHesaplaSayfasi> {
           SizedBox(height: 8),
           Text(
             '${kaloriDegeri!.toStringAsFixed(0)} kcal',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.lightGreenAccent),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
-          if (_bmi != null) ...[
-            SizedBox(height: 24),
-            Text(
-              'Vücut Kitle İndeksiniz (BMI):',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            SizedBox(height: 8),
-            Text(
-              '${_bmi!.toStringAsFixed(1)} → $_bmiDurumu',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.lightBlueAccent),
-            ),
-          ],
+          SizedBox(height: 8),
+          Text(
+            'BMI(Vücut Kitle İndeksi): ${_bmi!.toStringAsFixed(1)} ($_bmiDurumu)',
+            style: TextStyle(color: Colors.white),
+          ),
         ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Kalori Hesaplayıcı', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.white),
+      ),
+      extendBodyBehindAppBar: true,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFB06AB3), Color(0xFF4568DC)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.only(top: kToolbarHeight + 20, left: 16, right: 16),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              children: [
+                DropdownButtonFormField<String>(
+                  value: _cinsiyet,
+                  decoration: _inputDecoration('Cinsiyet'),
+                  dropdownColor: Colors.deepPurple[400],
+                  style: TextStyle(color: Colors.white),
+                  iconEnabledColor: Colors.white,
+                  items: [
+                    DropdownMenuItem(
+                      value: null,
+                      enabled: false,
+                      child: Text('Seçiniz', style: TextStyle(color: Colors.white54)),
+                    ),
+                    DropdownMenuItem(value: 'Erkek', child: Text('Erkek')),
+                    DropdownMenuItem(value: 'Kadın', child: Text('Kadın')),
+                  ],
+                  onChanged: (val) => setState(() => _cinsiyet = val),
+                  validator: (val) => val == null ? 'Lütfen cinsiyet seçiniz' : null,
+                ),
+                _buildTextField('Kilo (kg)', _kiloController),
+                _buildTextField('Boy (cm)', _boyController),
+                _buildTextField('Yaş', _yasController),
+                DropdownButtonFormField<String>(
+                  value: _hedef,
+                  decoration: _inputDecoration('Hedef'),
+                  dropdownColor: Colors.deepPurple[400],
+                  style: TextStyle(color: Colors.white),
+                  iconEnabledColor: Colors.white,
+                  items: [
+                    DropdownMenuItem(
+                      value: null,
+                      enabled: false,
+                      child: Text('Seçiniz', style: TextStyle(color: Colors.white54)),
+                    ),
+                    DropdownMenuItem(value: 'Korumak', child: Text('Korumak')),
+                    DropdownMenuItem(value: 'Kilo Vermek', child: Text('Kilo Vermek')),
+                    DropdownMenuItem(value: 'Kilo Almak', child: Text('Kilo Almak')),
+                  ],
+                  onChanged: (val) => setState(() => _hedef = val),
+                  validator: (val) => val == null ? 'Lütfen hedef seçiniz' : null,
+                ),
+                SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: _hesapla,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white.withOpacity(0.9),
+                    foregroundColor: Colors.deepPurple,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  ),
+                  child: Text('Hesapla'),
+                ),
+                SizedBox(height: 24),
+                if (_kaloriKorumak != null) _buildSonuc(),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
