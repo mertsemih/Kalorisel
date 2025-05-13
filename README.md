@@ -1,16 +1,51 @@
-# kalori_app
+# 🥗 KaloriSel
 
-A new Flutter project.
+KaloriSel, kişisel kalori takibi ve beslenme hedefleri yönetimi için geliştirilmiş modern ve kullanıcı dostu bir Flutter uygulamasıdır. Web üzerinden de erişilebilir.
 
-## Getting Started
+![KaloriSel Banner](assets/screens/banner.jpg) 
 
-This project is a starting point for a Flutter application.
+---
 
-A few resources to get you started if this is your first Flutter project:
+## 🚀 Özellikler
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- 🔢 Günlük kalori hesabı yapma
+- 🥗 Kişiye özel beslenme programı
+- 🎯 Hedef belirleme: Kilo vermek, korumak veya almak
+- 📝 Günlük tüketim takibi
+- 📊 Raporlama ve görselleştirme
+- 👤 Profil oluşturma (isim, cinsiyet, boy, kilo)
+- ☁️ Firebase Authentication ile güvenli giriş
+- 🌐 Web üzerinden erişim: [kalorisel.netlify.app](https://kalorisel.netlify.app)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## 🧱 Teknolojiler
+
+| Teknoloji      | Açıklama                      |
+|----------------|-------------------------------|
+| Flutter        | Ana mobil/web framework       |
+| Firebase Auth  | Kullanıcı girişi/sistemi      |
+| SharedPreferences | Lokal veri saklama         |
+| Netlify        | Web host (statik deploy)      |
+
+---
+
+## 🖼️ Ekran Görüntüleri
+
+| Ana Sayfa | Kalori Hesaplama | Profil Sayfası |
+|----------|------------------|----------------|
+| ![1](assets/screens/home.png) | ![2](assets/screens/calorie.png) | ![3](assets/screens/profile.png) |
+
+
+
+---
+
+## 🛠️ Kurulum
+
+### Flutter ile lokal çalıştırmak için:
+
+```bash
+git clone https://github.com/kullaniciadi/kalorisel.git
+cd kalorisel
+flutter pub get
+flutter run
