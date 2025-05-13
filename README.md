@@ -2,7 +2,7 @@
 
 KaloriSel, kişisel kalori takibi ve beslenme hedefleri yönetimi için geliştirilmiş modern ve kullanıcı dostu bir Flutter uygulamasıdır. Web üzerinden de erişilebilir.
 
-![KaloriSel Banner](assets/screens/banner.jpg) 
+![KaloriSel Banner](assets/screens/banner.png) 
 
 ---
 
