@@ -5,8 +5,6 @@
 *.swp
 .DS_Store
 .atom/
-!build/web/
-!build/
 .buildlog/
 .history
 .svn/
@@ -33,6 +31,10 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+
+!build/
+!build/web/
+
 
 # Symbolication related
 app.*.symbols
