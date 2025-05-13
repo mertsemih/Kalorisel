@@ -183,8 +183,8 @@ class _HedeflerPageState extends State<HedeflerPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.deepPurple,
-        child: Icon(Icons.add, color: Colors.white),
+        backgroundColor: Colors.white,
+        child: Icon(Icons.add, color: Colors.deepPurple),
         onPressed: _yeniHedefDialog,
       ),
     );

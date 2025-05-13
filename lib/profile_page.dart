@@ -12,7 +12,8 @@ class _ProfilePageState extends State<ProfilePage> {
   final _soyisimController = TextEditingController();
   final _boyController = TextEditingController();
   final _kiloController = TextEditingController();
-  String _cinsiyet = 'Seçiniz';
+
+  String? _cinsiyet; // null olabilen şekilde tanımlandı
 
   @override
   void initState() {
@@ -22,92 +23,96 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _verileriYukle() async {
     final prefs = await SharedPreferences.getInstance();
-
-    _isimController.text = prefs.getString('isim') ?? '';
-    _soyisimController.text = prefs.getString('soyisim') ?? '';
-    _boyController.text = prefs.getString('boy') ?? '';
-    _kiloController.text = prefs.getString('kilo') ?? '';
-
-    final kayitliCinsiyet = prefs.getString('cinsiyet');
-    if (kayitliCinsiyet != null && (kayitliCinsiyet == 'Erkek' || kayitliCinsiyet == 'Kadın')) {
-      _cinsiyet = kayitliCinsiyet;
-    } else {
-      _cinsiyet = 'Seçiniz';
-    }
-
-    setState(() {}); // arayüzü güncelle
+    setState(() {
+      _isimController.text = prefs.getString('isim') ?? '';
+      _soyisimController.text = prefs.getString('soyisim') ?? '';
+      _boyController.text = prefs.getString('boy') ?? '';
+      _kiloController.text = prefs.getString('kilo') ?? '';
+      final cinsiyet = prefs.getString('cinsiyet');
+      if (cinsiyet != null && ['Erkek', 'Kadın'].contains(cinsiyet)) {
+        _cinsiyet = cinsiyet;
+      }
+    });
   }
 
   Future<void> _kaydet() async {
     if (_formKey.currentState!.validate()) {
+      if (_cinsiyet == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Lütfen cinsiyet seçin')),
+        );
+        return;
+      }
+
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('isim', _isimController.text);
       await prefs.setString('soyisim', _soyisimController.text);
       await prefs.setString('boy', _boyController.text);
       await prefs.setString('kilo', _kiloController.text);
-      await prefs.setString('cinsiyet', _cinsiyet);
+      await prefs.setString('cinsiyet', _cinsiyet!);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Profil bilgileri kaydedildi')),
-      );
-
-      Navigator.pop(context);
+      Navigator.pop(context); // Ana sayfaya dön
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        title: Text('Profil Bilgileri', style: TextStyle(color: Colors.white)),
-        iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFB06AB3), Color(0xFF4568DC)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        padding: const EdgeInsets.only(top: kToolbarHeight + 24, left: 16, right: 16),
+      appBar: AppBar(title: Text('Profil Bilgileri')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: ListView(
             children: [
               _buildTextField('İsim', _isimController),
               _buildTextField('Soyisim', _soyisimController),
               _buildTextField('Boy (cm)', _boyController),
               _buildTextField('Kilo (kg)', _kiloController),
-              SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-               value: ['Seçiniz', 'Erkek', 'Kadın'].contains(_cinsiyet) ? _cinsiyet : 'Seçiniz',
+           DropdownButtonFormField<String>(
+  value: _cinsiyet,
+  decoration: InputDecoration(
+    labelText: 'Cinsiyet',
+    labelStyle: TextStyle(color: Colors.white70),
+    enabledBorder: UnderlineInputBorder(
+      borderSide: BorderSide(color: Colors.white), 
+    ),
+    focusedBorder: UnderlineInputBorder(
+      borderSide: BorderSide(color: Colors.white), 
+    ),
+    border: UnderlineInputBorder(
+      borderSide: BorderSide(color: Colors.white), 
+    ),
+  ),
+  dropdownColor: Color(0xFF7E57C2), 
+  iconEnabledColor: Colors.white,
+  style: TextStyle(color: Colors.white), 
+  items: [
+    DropdownMenuItem(
+      value: null,
+      enabled: false,
+      child: Text('Seçiniz', style: TextStyle(color: Colors.white54)),
+    ),
+    DropdownMenuItem(
+      value: 'Erkek',
+      child: Text('Erkek', style: TextStyle(color: Colors.white)),
+    ),
+    DropdownMenuItem(
+      value: 'Kadın',
+      child: Text('Kadın', style: TextStyle(color: Colors.white)),
+    ),
+  ],
+  onChanged: (val) {
+    if (val != null) setState(() => _cinsiyet = val);
+  },
+  validator: (v) => v == null ? 'Lütfen cinsiyet seçin' : null,
+),
 
-                dropdownColor: Colors.deepPurple[400],
-                decoration: _inputDecoration('Cinsiyet'),
-                style: TextStyle(color: Colors.white),
-                items: ['Seçiniz', 'Erkek', 'Kadın']
-                    .map((e) => DropdownMenuItem(
-                          value: e,
-                          child: Text(e, style: TextStyle(color: Colors.white)),
-                        ))
-                    .toList(),
-                onChanged: (val) => setState(() => _cinsiyet = val!),
-                validator: (v) =>
-                    (v == null || v == 'Seçiniz') ? 'Lütfen cinsiyet seçin' : null,
-              ),
-              SizedBox(height: 24),
+
+
+              SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _kaydet,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white.withOpacity(0.9),
-                  foregroundColor: Colors.deepPurple,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                ),
                 child: Text('Kaydet'),
               ),
             ],
@@ -118,26 +123,24 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Widget _buildTextField(String label, TextEditingController controller) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: label.contains("cm") || label.contains("kg")
-            ? TextInputType.number
-            : TextInputType.text,
-        style: TextStyle(color: Colors.white),
-        decoration: _inputDecoration(label),
-        validator: (v) => v == null || v.trim().isEmpty ? '$label girin' : null,
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: TextFormField(
+      controller: controller,
+      style: TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.white70),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white),
+        ),
       ),
-    );
-  }
+      validator: (v) => v == null || v.isEmpty ? '$label girin' : null,
+    ),
+  );
+}
 
-  InputDecoration _inputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: TextStyle(color: Colors.white),
-      enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-    );
-  }
 }
