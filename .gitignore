@@ -9,7 +9,9 @@ build/
 android/app/release/
 android/app/profile/
 android/app/debug/
-ios/Flutter/.last_build_id
+
+# 🔐 Gizli dosyalar
+android/app/google-services.json
 
 # IDEs
 .idea/

@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:confetti/confetti.dart';
+import 'package:intl/intl.dart';
+
 import 'yeni_hedef_ekle_page.dart';
 import 'hedef_detay_page.dart';
 
@@ -33,33 +35,56 @@ class _HedeflerPageState extends State<HedeflerPage> {
     if (hedeflerStr != null) {
       List<dynamic> liste = jsonDecode(hedeflerStr);
       List<Map<String, dynamic>> parsed = List<Map<String, dynamic>>.from(liste);
-      setState(() {
-        hedefler = parsed;
-      });
+
+      List<Map<String, dynamic>> guncelHedefler = [];
+      bool tebrikGosterildi = false;
 
       for (var hedef in parsed) {
         DateTime bitis = DateTime.parse(hedef['bitisTarih']);
         if (DateTime.now().isAfter(bitis)) {
-          _confettiController.play();
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            showDialog(
-              context: context,
-              builder: (_) => AlertDialog(
-                title: Text("🎉 Tebrikler!"),
-                content: Text("Hedefini başarıyla tamamladın!"),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text("Kapat"),
+          if (!tebrikGosterildi) {
+            tebrikGosterildi = true;
+            _confettiController.play();
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  title: Text(
+                    "🎉 Tebrikler!",
+                    style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
                   ),
-                ],
-              ),
-            );
-          });
-          break;
+                  content: Text(
+                    "Hedefini başarıyla tamamladın!",
+                    style: TextStyle(color: Colors.black87),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: Text("Kapat", style: TextStyle(color: Colors.deepPurple)),
+                    ),
+                  ],
+                ),
+              );
+            });
+          }
+          continue; // bitmiş hedefi gösterme
         }
+        guncelHedefler.add(hedef);
       }
+
+      await prefs.setString('hedefler_listesi', jsonEncode(guncelHedefler));
+      setState(() {
+        hedefler = guncelHedefler;
+      });
     }
+  }
+
+  String _formatTarih(String iso) {
+    final tarih = DateTime.tryParse(iso);
+    if (tarih == null) return iso;
+    return DateFormat('dd.MM.yyyy').format(tarih);
   }
 
   Future<void> _hedefEkle(Map<String, dynamic> hedef) async {
@@ -80,12 +105,20 @@ class _HedeflerPageState extends State<HedeflerPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Hedefi Sil'),
-        content: Text('Bu hedefi silmek istediğinize emin misiniz?'),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Hedefi Sil',
+          style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Bu hedefi silmek istediğinize emin misiniz?',
+          style: TextStyle(color: Colors.black87),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('İptal'),
+            child: Text('İptal', style: TextStyle(color: Colors.deepPurple)),
           ),
           TextButton(
             onPressed: () {
@@ -137,39 +170,41 @@ class _HedeflerPageState extends State<HedeflerPage> {
               ),
             ),
             padding: const EdgeInsets.only(top: kToolbarHeight + 24, left: 16, right: 16),
-            child: ListView.builder(
-              itemCount: hedefler.length,
-              itemBuilder: (context, index) {
-                final h = hedefler[index];
-                return Card(
-                  color: Colors.white.withOpacity(0.1),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  child: ListTile(
-                    title: Text(
-                      h['baslik'],
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      '${h['baslangicTarih']} - ${h['bitisTarih']}',
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.redAccent),
-                          onPressed: () => _silmeOnayi(index),
+            child: hedefler.isEmpty
+                ? Center(child: Text("Henüz hedef eklenmemiş.", style: TextStyle(color: Colors.white)))
+                : ListView.builder(
+                    itemCount: hedefler.length,
+                    itemBuilder: (context, index) {
+                      final h = hedefler[index];
+                      return Card(
+                        color: Colors.white.withOpacity(0.1),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        child: ListTile(
+                          title: Text(
+                            h['baslik'],
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(
+                            '${_formatTarih(h['baslangicTarih'])} - ${_formatTarih(h['bitisTarih'])}',
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.redAccent),
+                                onPressed: () => _silmeOnayi(index),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.arrow_forward_ios, color: Colors.white),
+                                onPressed: () => _hedefeGit(h),
+                              ),
+                            ],
+                          ),
                         ),
-                        IconButton(
-                          icon: Icon(Icons.arrow_forward_ios, color: Colors.white),
-                          onPressed: () => _hedefeGit(h),
-                        ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
           Align(
             alignment: Alignment.topCenter,

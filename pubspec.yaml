@@ -20,7 +20,7 @@ dependencies:
   firebase_auth: ^4.17.4
   firebase_auth_web: ^5.8.13
   cloud_firestore: ^4.12.0
-
+  intl: ^0.18.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
