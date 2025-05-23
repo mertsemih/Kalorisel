@@ -15,7 +15,7 @@ KaloriSel, kişisel kalori takibi ve beslenme hedefleri yönetimi için gelişti
 - 📊 Raporlama ve görselleştirme
 - 👤 Profil oluşturma (isim, cinsiyet, boy, kilo)
 - ☁️ Firebase Authentication ile güvenli giriş
-- 🌐 Web üzerinden erişim: [kalorisel.netlify.app](https://kalorisel.netlify.app)
+
 
 ---
 
