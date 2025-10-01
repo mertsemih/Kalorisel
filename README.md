@@ -40,21 +40,6 @@ KaloriSel, kişisel kalori takibi ve beslenme hedefleri yönetimi için gelişti
 
 ---
 
-## 🛠️ Kurulum
-
-## 🔐 Gizli Anahtarlar ve Yapılandırmalar
-
-Bu projeyi çalıştırmak için aşağıdaki dosyalar yerel olarak oluşturulmalı:
-
-1. `android/app/google-services.json`  
-   - Firebase Console üzerinden alınmalıdır.
-
-2. (Opsiyonel) `lib/secrets.dart`  
-   - API anahtarları bu dosyada tutulmalı.
-   - `lib/secrets_example.dart` dosyasını kopyalayarak oluşturabilirsiniz.
-
-**Not:** Bu dosyalar `.gitignore` ile korunduğu için GitHub’da yer almaz.
-
 
 ### Flutter ile lokal çalıştırmak için:
 
